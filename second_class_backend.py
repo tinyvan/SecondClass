@@ -4,6 +4,7 @@ import json
 
 key_session=''
 secret=''
+ssl_verify_enabled=True
 session=requests.Session()
 
 def set_key_session(key:str):
@@ -12,6 +13,9 @@ def set_key_session(key:str):
 def set_secret(sec:str):
     global secret
     secret=sec
+def set_ssl_verify_enabled(enabled:bool):
+    global ssl_verify_enabled
+    ssl_verify_enabled=enabled
 def make_get_headers():
     if key_session=='' or secret=='':
         raise Exception("Key session or secret is not set")
@@ -47,7 +51,7 @@ def make_post_headers(content_length:str):
  }
 def get_article_by_id(id:str):
     headers=make_get_headers()
-    response=session.get(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/{id}',headers=headers,verify=False)
+    response=session.get(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/{id}',headers=headers,verify=ssl_verify_enabled)
     return response
 
 def check_if_questions_exist(resp):
@@ -72,7 +76,7 @@ def check_if_answered(response):
 def get_questions(id:str):
     headers=make_get_headers()
     try:
-        response=session.get(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/questions/{id}',headers=headers,verify=False)
+        response=session.get(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/questions/{id}',headers=headers,verify=ssl_verify_enabled)
         return response.json()["data"]["questions"]
     except Exception as e:
         print(e)
@@ -82,7 +86,7 @@ def answer_questions(id:str,answers:list):
     payload=json.dumps(answers).encode("utf-8")
     headers=make_post_headers(str(len(payload)))
     try:
-        response=session.post(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/answer/{id}',headers=headers,data=payload,verify=False)
+        response=session.post(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/answer/{id}',headers=headers,data=payload,verify=ssl_verify_enabled)
         print(response.text)
         if response.json()["data"]["desc"]=="恭喜,获得积分":
             return True
@@ -96,7 +100,7 @@ def get_articles(number:str):
     payload='{}'
     headers=make_post_headers(str(len(payload)))
     try:
-        response=session.post(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/page/{number}/10',headers=headers,data=payload,verify=False)
+        response=session.post(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/page/{number}/10',headers=headers,data=payload,verify=ssl_verify_enabled)
         return response.json()["data"]
     except Exception as e:
         print(e)

@@ -4,7 +4,9 @@ import json
 
 sc.set_key_session("")
 sc.set_secret("")
+sc.set_ssl_verify_enabled(False)
 qwen.Qwen_init("")
+
 end=False
 try:
     with open("page_cache","r",encoding='utf-8') as f:
@@ -37,11 +39,12 @@ while not end:
                 output_to_LLM+=f"{chr(index+65)}.{option_content}\n"
             print(output_to_LLM)
             answer_text=qwen.get_ans(output_to_LLM)
+            print('LLM Answer:',answer_text)
             answer_post=[]
             for i in range(0,len(options)):
                 if answer_text.find(chr(i+65))!=-1 or answer_text.find(chr(i+97))!=-1:
-                    answer_post.append(options[i-1]["id"])
-            print(answer_post)
+                    answer_post.append(options[i]["id"])
+            
             
             if not sc.answer_questions(question_id,answer_post):
                 manual_input=input("Error in answering questions.Try manual input.")
