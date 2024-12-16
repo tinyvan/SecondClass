@@ -1,2 +1,5 @@
 __pycache__
 .main_test_dev.py
+config.json
+page_cache
+testllm.txt

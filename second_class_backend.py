@@ -1,22 +1,22 @@
 import requests
 import json
-
+import hashlib
 
 key_session=''
-secret=''
+hfut_hardcode="9030a5ea-a52e-4033-a9b6-e64ba04c02da"
 ssl_verify_enabled=True
 session=requests.Session()
 
 def set_key_session(key:str):
     global key_session
     key_session=key
-def set_secret(sec:str):
-    global secret
-    secret=sec
+
 def set_ssl_verify_enabled(enabled:bool):
     global ssl_verify_enabled
     ssl_verify_enabled=enabled
 def make_get_headers():
+    global key_session
+    secret=hashlib.md5((key_session+hfut_hardcode).encode("utf-8")).hexdigest()
     if key_session=='' or secret=='':
         raise Exception("Key session or secret is not set")
     return {
@@ -37,7 +37,7 @@ def make_post_headers(content_length:str):
         raise Exception("Key sessionis not set")
     return {
  'content-length':content_length,
- 'key_session':key_session,#'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyMDI0MjExOTM2IiwiaWF0IjoxNzMxNzQ0MDY4LCJleHAiOjE3MzIzNDg4Njh9.TZJju9MPxCRx42c9pgpyc2jD3mizORHyI0eKKp_0Iss',
+ 'key_session':key_session,
  'xweb_xhr':'1',
  'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090c11)XWEB/11275',
  'content-type':'application/json',
@@ -88,10 +88,12 @@ def answer_questions(id:str,answers:list):
     try:
         response=session.post(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/answer/{id}',headers=headers,data=payload,verify=ssl_verify_enabled)
         print(response.text)
-        if response.json()["data"]["desc"]=="恭喜,获得积分":
-            return True
-        #return response.json()
-
+        if response.json()["code"]==200:
+            if response.json()["data"]["desc"]=="恭喜,获得积分":
+                return True
+        else:
+            return False
+ 
     except Exception as e:
         print(e)
         raise Exception("Error in answering questions\n",response.text)
