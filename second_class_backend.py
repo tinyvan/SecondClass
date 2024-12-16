@@ -88,7 +88,7 @@ def answer_questions(id:str,answers:list):
     try:
         response=session.post(f'https://dekt.hfut.edu.cn/scReports/api/wx/netlearning/answer/{id}',headers=headers,data=payload,verify=ssl_verify_enabled)
         print(response.text)
-        if response.json()["code"]==200:
+        if response.json()["code"]=="200":
             if response.json()["data"]["desc"]=="恭喜,获得积分":
                 return True
         else:
