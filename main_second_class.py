@@ -68,11 +68,20 @@ while not end:
                 output_to_LLM+=f"{chr(index+65)}.{option_content}\n"
             print(output_to_LLM)
             answer_text=llm.get_ans(output_to_LLM)
+            answer_options=[]
             print('LLM Answer:',answer_text)
+            try:
+                llm_json=json.loads(answer_text)
+                answer_options=llm_json["answer"]
+            except Exception as e:
+                print(Fore.RED+"Error in parsing LLM answer.")
+                print(Fore.RED+e)
             answer_post=[]
-            for i in range(0,len(options)):
-                if answer_text.find(chr(i+65))!=-1 or answer_text.find(chr(i+97))!=-1:
-                    answer_post.append(options[i]["id"])
+            for ans in answer_options:
+                answer_post.append(options[int(ans)-65]["id"])
+            # for i in range(0,len(options)):
+            #     if answer_text.find(chr(i+65))!=-1 or answer_text.find(chr(i+97))!=-1:
+            #         answer_post.append(options[i]["id"])
             print(answer_post)
             
             if not sc.answer_questions(question_id,answer_post):

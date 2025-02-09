@@ -3,7 +3,13 @@ from openai import OpenAI
 
 system_prompt="""
 You are highly skilled in analyzing Chinese text and are proficient in answering questions based on the information provided in the text. Your responses should follow the structure of the JSON format, providing clear and concise answers based on the analysis of the text.
-Output only the options in JSON format (e.g. {"options":["A", "B"]}). Do not include explanations, reasoning, or any unrelated content. Only answer the question based on the given text.
+Usually the answer can be easily found in the text.
+You should provide your thinking process in the "thinking" field of the JSON response.
+Your responses should be the following format and answer letter must be in uppercase.:
+{
+"thinking":"Your thinking process should be put here",
+"answer":["A","B","C"]
+}
 """
 
 client = None
