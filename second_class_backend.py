@@ -91,6 +91,8 @@ def answer_questions(id:str,answers:list):
         if response.json()["code"]=="200":
             if response.json()["data"]["desc"]=="恭喜,获得积分":
                 return True
+        elif response.json()["code"]=="1002":
+            return True
         else:
             return False
  

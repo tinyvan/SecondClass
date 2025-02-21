@@ -1,0 +1,17 @@
+#LLM_API_LABEL {
+    background: green 20%;
+    color: green;
+    border: dashed green;
+}
+
+#KEY_SESSION_LABEL {
+    background: blue 20%;
+    color: blue;
+    border: dashed blue;
+}
+
+#LLM_SERVICE_PROVIDER_LABEL{
+    background: purple 20%;
+    color: purple;
+    border: dashed purple;
+}
