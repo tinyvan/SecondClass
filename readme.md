@@ -1,5 +1,5 @@
-Second Class Exercises Automating for HFUT.
-模拟第二课堂获取题目与答题的脚本,使用大模型自动答题
+Second Class Exercises Automating.
+模拟获取题目与答题的脚本,使用大模型自动答题
 大模型api-key与登录第二课堂使用的key_session需要手动获取
 
 TODO:自动化抓包

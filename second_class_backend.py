@@ -1,7 +1,7 @@
 import requests
 import json
 import hashlib
-
+import bs4
 key_session=''
 hfut_hardcode="9030a5ea-a52e-4033-a9b6-e64ba04c02da"
 ssl_verify_enabled=True
@@ -111,6 +111,6 @@ def get_articles(number:str):
         raise Exception("Error in getting articles\n",response.text)
 
 def text_trim(text:str):
-    import bs4
+    
     soup=bs4.BeautifulSoup(text,"html.parser")
     return soup.text
