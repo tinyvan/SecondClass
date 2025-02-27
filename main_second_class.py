@@ -13,11 +13,14 @@ configFile=None#open("config.json","r",encoding='utf-8')
 configJson={}
 key_session=''
 LLM_api_key=''
-LLM_selected_service="ChatAnywhere" #Default
+LLM_selected_service="Deepseek" #Default
 LLM_selected_model="" #Default
 page_cache=-1
 
-configFile=open("config.json","r+",encoding='utf-8')
+try:
+    configFile=open("config.json","r+",encoding='utf-8')
+except FileNotFoundError:
+    configFile=open("config.json","w+",encoding='utf-8')
 try:
     configJson=json.load(configFile)
     key_session=configJson["key_session"]

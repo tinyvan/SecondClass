@@ -2,7 +2,8 @@ from openai import OpenAI
 
 LLM_SERVICES={
     "ChatAnywhere":"https://api.chatanywhere.tech/v1",
-    "Google Gemini":"https://generativelanguage.googleapis.com/v1beta/openai/"
+    "Google Gemini":"https://generativelanguage.googleapis.com/v1beta/openai/",
+    "Deepseek":"https://api.deepseek.com/v1"
 }
 
 system_prompt="""

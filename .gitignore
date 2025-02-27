@@ -4,3 +4,5 @@ config.json
 page_cache
 testllm.txt
 test.py
+build
+dist
