@@ -2,6 +2,7 @@ import second_class_backend as sc
 import llm
 import json
 import os
+import config_save
 from colorama import init,Fore
 from textual.app import App, ComposeResult
 from textual.containers import HorizontalGroup, VerticalScroll,Grid
@@ -9,32 +10,25 @@ from textual.widgets import Button, Footer, Header,Label,Input,Log,Select
 from textual.events import Print
 
 init(autoreset=True) #初始化颜色ama
-configFile=None#open("config.json","r",encoding='utf-8')
-configJson={}
-key_session=''
-LLM_api_key=''
-LLM_selected_service="Deepseek" #Default
-LLM_selected_model="" #Default
-page_cache=-1
-
-try:
-    configFile=open("config.json","r+",encoding='utf-8')
-except FileNotFoundError:
-    configFile=open("config.json","w+",encoding='utf-8')
-try:
-    configJson=json.load(configFile)
-    key_session=configJson["key_session"]
-    LLM_api_key=configJson["LLM_api_key"]
-    page_cache=configJson["page_cache"]
-    LLM_selected_service=configJson["LLM_selected_service"]
-    LLM_selected_model=configJson["LLM_selected_model"]
-except Exception as e:
-    print(e)
-    print(Fore.RED+"Error in reading config.json.Trying to init...")
-    configJson={}
-    key_session=''
-    LLM_api_key=''
-    page_cache=1
+config=config_save.Config()
+# try:
+#     configFile=open("config.json","r+",encoding='utf-8')
+# except FileNotFoundError:
+#     configFile=open("config.json","w+",encoding='utf-8')
+# try:
+#     configJson=json.load(configFile)
+#     key_session=configJson["key_session"]
+#     LLM_api_key=configJson["LLM_api_key"]
+#     page_cache=configJson["page_cache"]
+#     LLM_selected_service=configJson["LLM_selected_service"]
+#     LLM_selected_model=configJson["LLM_selected_model"]
+# except Exception as e:
+#     print(e)
+#     print(Fore.RED+"Error in reading config.json.Trying to init...")
+#     configJson={}
+#     key_session=''
+#     LLM_api_key=''
+#     page_cache=1
 
 class LLMSERVICEPROVIDERSETTING(HorizontalGroup):
     def compose(self) -> ComposeResult:
@@ -49,28 +43,29 @@ class LLMSERVICEPROVIDERSETTING(HorizontalGroup):
         yield self.llm_model_select
     def on_select_changed(self,event:Select.Changed) -> None:
         if event.select.id=="LLM_MODEL_SELECT":
-            global LLM_selected_model
-            LLM_selected_model=event.select.value
+            global config
+            config.set("LLM_selected_model",event.select.value)
 
 
     def on_mount(self) -> None:
-        self.llm_service_provider_select.value=LLM_selected_service
+        self.llm_service_provider_select.value=config.get("LLM_selected_service")
 #class LLMMODELSETTING(HorizontalGroup):
 class LLMAPI(HorizontalGroup):
     def compose(self) -> ComposeResult:
         yield Label("LLM API:",id="LLM_API_LABEL")
-        self.llm_api_input=Input(value=LLM_api_key,placeholder="llm api",id="LLM_API_INPUT")
+        self.llm_api_input=Input(value=config.get("LLM_api_key"),placeholder="llm api",id="LLM_API_INPUT")
         yield self.llm_api_input
     def on_button_pressed(self) -> None:
         print("Button pressed!")
 class SecretBox(HorizontalGroup):
     def compose(self) -> ComposeResult:
         yield Label("key_session:",id="KEY_SESSION_LABEL")
-        self.key_session_input=Input(value=key_session,placeholder="key_session",id="KEY_SESSION_INPUT")
+        self.key_session_input=Input(value=config.get("key_session"),placeholder="key_session",id="KEY_SESSION_INPUT")
         yield self.key_session_input
 class InfoTable(Grid):
     def compose(self) -> ComposeResult:
-        self.label_widget = Label(f"目前已到达页数:{page_cache}",id="page")
+        _page=config.get("page_cache")
+        self.label_widget = Label(f"目前已到达页数:{_page}",id="page")
         yield self.label_widget
         self.submit_widget=Button("提交",id="submit")
         yield self.submit_widget
@@ -85,19 +80,22 @@ class MainApp(App):
         yield VerticalScroll(LLMAPI(),LLMSERVICEPROVIDERSETTING(),SecretBox(),InfoTable())
     def on_button_pressed(self,event:Button.Pressed) -> None:
             if event.button.id=="LLM_LOAD":
-                global LLM_api_key
-                global LLM_selected_service
+                global config
                 llm_api_input=self.query_one(LLMAPI).llm_api_input
                 if llm_api_input.value=="":
                     llm_api_input.placeholder="LLM API CANNOT BE EMPTY!"
                     return
-                LLM_selected_service=self.query_one(LLMSERVICEPROVIDERSETTING).llm_service_provider_select.value
+                config.set("LLM_selected_service",self.query_one(LLMSERVICEPROVIDERSETTING).llm_service_provider_select.value)
 
-                LLM_api_key=llm_api_input.value
-                llm.LLM_init(LLM_api_key,LLM_selected_service)
+                config.set("LLM_api_key",llm_api_input.value)
+                llm.LLM_init(config.get("LLM_api_key"),config.get("LLM_selected_service"))
                 LLM_model_select=self.query_one(LLMSERVICEPROVIDERSETTING).llm_model_select
                 LLM_model_select.set_options([(model,model) for model in llm.get_LLM_models()])
-
+                try:
+                    LLM_model_select.value=config.get("LLM_selected_model")
+                except:
+                    pass
+                
             elif event.button.id=="submit":
                 llm_api_input=self.query_one(LLMAPI).llm_api_input
                 if llm_api_input.value=="":
@@ -109,17 +107,11 @@ class MainApp(App):
                     return
                 
                 
-                global key_session
                 
-                key_session=key_session_input.value
-                configJson["key_session"]=key_session
-                configJson["LLM_api_key"]=LLM_api_key
-                configJson["LLM_selected_service"]=LLM_selected_service
-                configJson["LLM_selected_model"]=LLM_selected_model
-                configJson["page_cache"]=page_cache
-                configFile.seek(0)
-                configFile.truncate()
-                json.dump(configJson,configFile)
+                #global config
+                
+                config.set("key_session",key_session_input.value)
+                config.save()
                 self.exit(100)
                 print(Fore.GREEN+"Config updated.")
             
@@ -133,13 +125,14 @@ if ret!=100:
         exit(0)
     print(Fore.RED+"Error in getting config.")
     exit(1)
-sc.set_key_session(key_session)
+sc.set_key_session(config.get("key_session"))
 
 sc.set_ssl_verify_enabled(False)
 finished=0
 while True:
-    articles=sc.get_articles(str(page_cache))
+    articles=sc.get_articles(str(config.get("page_cache")))
     if not articles:
+        
         print(Fore.RED+"Error in getting articles.KEY_SEESION MAY NEED UPDATE!!!")
         exit(1)
     for article in articles["list"]:
@@ -163,7 +156,7 @@ while True:
                 option_content=option["optionContent"]
                 output_to_LLM+=f"{chr(index+65)}.{option_content}\n"
             print(output_to_LLM)
-            answer_text=llm.get_ans(output_to_LLM,LLM_selected_model)
+            answer_text=llm.get_ans(output_to_LLM,config.get("LLM_selected_model"))
             answer_options=[]
             print('LLM Answer:',answer_text)
             try:
@@ -199,10 +192,6 @@ while True:
             if finished>=2:
                 print(Fore.GREEN+"Finished 2 questions!")
                 print(Fore.GREEN+"Exiting...")
-                configFile.close()
                 exit(0)
-    page_cache+=1
-    configJson["page_cache"]=page_cache
-    configFile.seek(0)
-    json.dump(configJson,configFile)
-    configFile.truncate()
+    config.set("page_cache",config.get("page_cache")+1)
+    config.save()
